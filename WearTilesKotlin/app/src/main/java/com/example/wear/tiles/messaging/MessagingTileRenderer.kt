@@ -17,9 +17,9 @@ package com.example.wear.tiles.messaging
 
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.wear.tiles.DeviceParametersBuilders
-import androidx.wear.tiles.LayoutElementBuilders.LayoutElement
-import androidx.wear.tiles.ResourceBuilders.Resources
+import androidx.wear.protolayout.DeviceParametersBuilders
+import androidx.wear.protolayout.LayoutElementBuilders.LayoutElement
+import androidx.wear.protolayout.ResourceBuilders.Resources
 import com.example.wear.tiles.R
 import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.google.android.horologist.tiles.render.SingleTileLayoutRenderer
@@ -39,26 +39,30 @@ class MessagingTileRenderer(context: Context) :
      * [Resources.Builder].
      */
     override fun Resources.Builder.produceRequestedResources(
-        resourceResults: Map<Contact, Bitmap>,
+        resourceState: Map<Contact, Bitmap>,
         deviceParameters: DeviceParametersBuilders.DeviceParameters,
-        resourceIds: MutableList<String>
+        resourceIds: List<String>
     ) {
         // If `resourceIds` is empty, it means all resources are being requested so we should add
         // the Search image resource in both of these cases.
         if (resourceIds.isEmpty() || resourceIds.contains(ID_IC_SEARCH)) {
             addIdToImageMapping(
-                /* id = */ ID_IC_SEARCH,
-                /* image = */ drawableResToImageResource(R.drawable.ic_search_24)
+                /* id = */
+                ID_IC_SEARCH,
+                /* image = */
+                R.drawable.ic_search_24
             )
         }
 
         // We already checked `resourceIds` in `MessagingTileService` because we needed to know
         // which avatars needed to be fetched from the network; `resourceResults` was already
         // filtered so it only contains bitmaps for the requested resources.
-        resourceResults.forEach { (contact, bitmap) ->
+        resourceState.forEach { (contact, bitmap) ->
             addIdToImageMapping(
-                /* id = */ "$ID_CONTACT_PREFIX${contact.id}",
-                /* image = */ bitmapToImageResource(bitmap)
+                /* id = */
+                "$ID_CONTACT_PREFIX${contact.id}",
+                /* image = */
+                bitmapToImageResource(bitmap)
             )
         }
     }

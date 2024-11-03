@@ -15,6 +15,7 @@
  */
 package com.example.android.wearable.datalayer
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.util.Log
 import com.google.android.gms.wearable.DataEventBuffer
@@ -35,6 +36,7 @@ class DataLayerListenerService : WearableListenerService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    @SuppressLint("VisibleForTests")
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         super.onDataChanged(dataEvents)
 
@@ -64,6 +66,11 @@ class DataLayerListenerService : WearableListenerService() {
         }
     }
 
+    // When the message to start the Wearable app is received, this method starts the Wearable app.
+    // Alternative to this implementation, Horologist offers a DataHelper API which allows to
+    // start the main activity or a different activity of your choice from the Wearable app
+    // see https://google.github.io/horologist/datalayer-helpers-guide/#launching-a-specific-activity-on-the-other-device
+    // for details
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
 

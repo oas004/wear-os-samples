@@ -16,23 +16,46 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.material.CompactChip
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
+import androidx.wear.protolayout.material.CompactChip
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
+import com.example.wear.tiles.tools.emptyClickable
+import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 object News {
 
     fun layout(
         context: Context,
         deviceParameters: DeviceParameters,
+        date: LocalDate,
+        clock: Clock = Clock.systemDefaultZone(),
         headline: String,
         newsVendor: String,
         clickable: Clickable
     ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
+        .apply {
+            if (deviceParameters.screenWidthDp > 225) {
+                setPrimaryLabelTextContent(
+                    Text.Builder(context, date.formatLocalDateTime(today = LocalDate.now(clock)))
+                        .setColor(ColorBuilders.argb(GoldenTilesColors.White))
+                        .setTypography(Typography.TYPOGRAPHY_CAPTION1)
+                        .build()
+                )
+            }
+        }
         .setContent(
             Text.Builder(context, headline)
                 .setMaxLines(3)
@@ -51,3 +74,32 @@ object News {
         )
         .build()
 }
+
+internal fun LocalDate.formatLocalDateTime(today: LocalDate = LocalDate.now()): String {
+    val yesterday = today.minusDays(1)
+
+    return when {
+        this == yesterday -> "yesterday ${format(DateTimeFormatter.ofPattern("MMM d"))}"
+        this == today -> "today ${format(DateTimeFormatter.ofPattern("MMM d"))}"
+        else -> format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))
+    }
+}
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun newsPreview(context: Context) = TilePreviewData {
+    val now = LocalDateTime.of(2024, 8, 1, 0, 0).toInstant(ZoneOffset.UTC)
+    val clock = Clock.fixed(now, Clock.systemUTC().zone)
+
+    TilePreviewHelper.singleTimelineEntryTileBuilder(
+        News.layout(
+            context,
+            it.deviceConfiguration,
+            headline = "Millions still without power as new storm moves across US",
+            newsVendor = "The New York Times",
+            date = LocalDate.now(clock).minusDays(1),
+            clock = clock,
+            clickable = emptyClickable
+        )
+    ).build()
+}
+

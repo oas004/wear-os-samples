@@ -16,18 +16,24 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.DimensionBuilders.ExpandedDimensionProp
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.material.Button
-import androidx.wear.tiles.material.ChipColors
-import androidx.wear.tiles.material.CompactChip
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.TitleChip
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.MultiButtonLayout
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders
+import androidx.wear.protolayout.DimensionBuilders
+import androidx.wear.protolayout.ModifiersBuilders
+import androidx.wear.protolayout.material.Button
+import androidx.wear.protolayout.material.ChipColors
+import androidx.wear.protolayout.material.CompactChip
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.TitleChip
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.MultiButtonLayout
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper.singleTimelineEntryTileBuilder
+import com.example.wear.tiles.R
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
+import com.example.wear.tiles.tools.emptyClickable
+import com.google.android.horologist.tiles.images.drawableResToImageResource
 
 object Workout {
     const val BUTTON_1_ICON_ID = "workout 1"
@@ -36,14 +42,15 @@ object Workout {
 
     fun buttonsLayout(
         context: Context,
-        deviceParameters: DeviceParameters,
+        deviceParameters: DeviceParametersBuilders.DeviceParameters,
         weekSummary: String,
-        button1Clickable: Clickable,
-        button2Clickable: Clickable,
-        button3Clickable: Clickable,
-        chipClickable: Clickable
+        button1Clickable: ModifiersBuilders.Clickable,
+        button2Clickable: ModifiersBuilders.Clickable,
+        button3Clickable: ModifiersBuilders.Clickable,
+        chipClickable: ModifiersBuilders.Clickable
     ) =
         PrimaryLayout.Builder(deviceParameters)
+            .setResponsiveContentInsetEnabled(true)
             .setPrimaryLabelTextContent(
                 Text.Builder(context, weekSummary)
                     .setTypography(Typography.TYPOGRAPHY_CAPTION1)
@@ -70,8 +77,10 @@ object Workout {
                 CompactChip.Builder(context, "More", chipClickable, deviceParameters)
                     .setChipColors(
                         ChipColors(
-                            /*backgroundColor=*/ ColorBuilders.argb(GoldenTilesColors.BlueGray),
-                            /*contentColor=*/ ColorBuilders.argb(GoldenTilesColors.White)
+                            /*backgroundColor=*/
+                            ColorBuilders.argb(GoldenTilesColors.BlueGray),
+                            /*contentColor=*/
+                            ColorBuilders.argb(GoldenTilesColors.White)
                         )
                     )
                     .build()
@@ -80,10 +89,11 @@ object Workout {
 
     fun largeChipLayout(
         context: Context,
-        deviceParameters: DeviceParameters,
-        clickable: Clickable,
+        deviceParameters: DeviceParametersBuilders.DeviceParameters,
+        clickable: ModifiersBuilders.Clickable,
         lastWorkoutSummary: String
     ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
         .setPrimaryLabelTextContent(
             Text.Builder(context, "Power Yoga")
                 .setTypography(Typography.TYPOGRAPHY_CAPTION1)
@@ -95,11 +105,13 @@ object Workout {
                 // TitleChip/Chip's default width == device width minus some padding
                 // Since PrimaryLayout's content slot already has margin, this leads to clipping
                 // unless we override the width to use the available space
-                .setWidth(ExpandedDimensionProp.Builder().build())
+                .setWidth(DimensionBuilders.ExpandedDimensionProp.Builder().build())
                 .setChipColors(
                     ChipColors(
-                        /*backgroundColor=*/ ColorBuilders.argb(GoldenTilesColors.Yellow),
-                        /*contentColor=*/ ColorBuilders.argb(GoldenTilesColors.Black)
+                        /*backgroundColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.Yellow),
+                        /*contentColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.Black)
                     )
                 )
                 .build()
@@ -111,4 +123,43 @@ object Workout {
                 .build()
         )
         .build()
+}
+
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun workoutButtonsPreview(context: Context) =
+    TilePreviewData(onTileResourceRequest = resources {
+        addIdToImageMapping(
+            Workout.BUTTON_1_ICON_ID, drawableResToImageResource(R.drawable.ic_run_24)
+        )
+        addIdToImageMapping(
+            Workout.BUTTON_2_ICON_ID, drawableResToImageResource(R.drawable.ic_yoga_24)
+        )
+        addIdToImageMapping(
+            Workout.BUTTON_3_ICON_ID, drawableResToImageResource(R.drawable.ic_cycling_24)
+        )
+    }) {
+        singleTimelineEntryTileBuilder(
+            Workout.buttonsLayout(
+                context,
+                it.deviceConfiguration,
+                weekSummary = "1 run this week",
+                button1Clickable = emptyClickable,
+                button2Clickable = emptyClickable,
+                button3Clickable = emptyClickable,
+                chipClickable = emptyClickable
+            )
+        ).build()
+    }
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun workoutLargeChipPreview(context: Context) = TilePreviewData {
+    singleTimelineEntryTileBuilder(
+        Workout.largeChipLayout(
+            context,
+            it.deviceConfiguration,
+            clickable = emptyClickable,
+            lastWorkoutSummary = "Last session 45m"
+        )
+    ).build()
 }

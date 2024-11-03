@@ -20,12 +20,14 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdk 35
+
+    namespace "com.example.android.wearable.alpha"
 
     defaultConfig {
         applicationId "com.example.android.wearable.alpha"
         minSdk 28
-        targetSdk 30
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -46,12 +48,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.majorVersion
     }
 }
 

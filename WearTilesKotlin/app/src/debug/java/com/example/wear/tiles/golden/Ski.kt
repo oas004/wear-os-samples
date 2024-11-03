@@ -16,22 +16,29 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.LayoutElementBuilders
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.MultiSlotLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders
+import androidx.wear.protolayout.LayoutElementBuilders
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.MultiSlotLayout
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
 
 object Ski {
 
-    fun layout(context: Context, stat1: Stat, stat2: Stat) = LayoutElementBuilders.Box.Builder()
-        .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
-        .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
-        .setHeight(DimensionBuilders.ExpandedDimensionProp.Builder().build())
-        .setWidth(DimensionBuilders.ExpandedDimensionProp.Builder().build())
-        .addContent(
+    fun layout(
+        context: Context,
+        deviceParameters: DeviceParametersBuilders.DeviceParameters,
+        stat1: Stat,
+        stat2: Stat
+    ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
+        .setContent(
             MultiSlotLayout.Builder()
+                .setHorizontalSpacerWidth(16f)
                 .addSlotContent(statColumn(context, stat1))
                 .addSlotContent(statColumn(context, stat2))
                 .build()
@@ -60,4 +67,16 @@ object Ski {
         .build()
 
     data class Stat(val label: String, val value: String, val unit: String)
+}
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun skiPreview(context: Context) = TilePreviewData {
+    TilePreviewHelper.singleTimelineEntryTileBuilder(
+        Ski.layout(
+            context,
+            it.deviceConfiguration,
+            stat1 = Ski.Stat("Max Spd", "46.5", "mph"),
+            stat2 = Ski.Stat("Distance", "21.8", "mile")
+        )
+    ).build()
 }

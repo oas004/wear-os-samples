@@ -16,15 +16,19 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.material.ChipColors
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.TitleChip
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.protolayout.DimensionBuilders
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
+import androidx.wear.protolayout.material.ChipColors
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.TitleChip
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
+import com.example.wear.tiles.tools.emptyClickable
 
 object Alarm {
 
@@ -36,6 +40,7 @@ object Alarm {
         alarmDays: String,
         clickable: Clickable
     ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
         .setPrimaryLabelTextContent(
             Text.Builder(context, timeUntilAlarm)
                 .setColor(ColorBuilders.argb(GoldenTilesColors.White))
@@ -50,8 +55,10 @@ object Alarm {
                 .setWidth(DimensionBuilders.ExpandedDimensionProp.Builder().build())
                 .setChipColors(
                     ChipColors(
-                        /*backgroundColor=*/ ColorBuilders.argb(GoldenTilesColors.Yellow),
-                        /*contentColor=*/ ColorBuilders.argb(GoldenTilesColors.DarkerGray)
+                        /*backgroundColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.Yellow),
+                        /*contentColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.DarkerGray)
                     )
                 )
                 .build()
@@ -60,7 +67,22 @@ object Alarm {
             Text.Builder(context, alarmDays)
                 .setColor(ColorBuilders.argb(GoldenTilesColors.Yellow))
                 .setTypography(Typography.TYPOGRAPHY_CAPTION1)
+                .setMaxLines(2)
                 .build()
         )
         .build()
+}
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun alarmPreview(context: Context) = TilePreviewData {
+    TilePreviewHelper.singleTimelineEntryTileBuilder(
+        Alarm.layout(
+            context,
+            it.deviceConfiguration,
+            timeUntilAlarm = "Less than 1 min",
+            alarmTime = "14:58",
+            alarmDays = "Mon, Tue, Wed, Thu, Fri,Sat",
+            clickable = emptyClickable
+        )
+    ).build()
 }

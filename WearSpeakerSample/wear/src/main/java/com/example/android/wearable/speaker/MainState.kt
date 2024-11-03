@@ -20,20 +20,18 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.media.MediaPlayer
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import java.time.Duration
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import java.time.Duration
-import kotlin.coroutines.resume
 
 /**
  * A state holder driving the logic of the app.
@@ -71,7 +69,7 @@ class MainState(
      * corresponds to the last known value of recording progress (or 0), where that value is useful
      * for animations.
      */
-    var recordingProgress by mutableStateOf(0f)
+    var recordingProgress by mutableFloatStateOf(0f)
         private set
 
     /**
@@ -93,7 +91,7 @@ class MainState(
     /**
      * The [SoundRecorder] for recording and playing audio captured on-device.
      */
-    private val soundRecorder = SoundRecorder(activity, "audiorecord.pcm")
+    private val soundRecorder = SoundRecorder(activity, "audiorecord.opus")
 
     suspend fun onStopped() {
         playbackStateMutatorMutex.mutate {
@@ -105,8 +103,7 @@ class MainState(
         playbackStateMutatorMutex.mutate {
             when (playbackState) {
                 is PlaybackState.Ready,
-                PlaybackState.PlayingVoice,
-                PlaybackState.PlayingMusic ->
+                PlaybackState.PlayingVoice ->
                     // If we weren't recording, check our permission to start recording.
                     when {
                         ContextCompat.checkSelfPermission(
@@ -145,51 +142,6 @@ class MainState(
         }
     }
 
-    suspend fun onMusicClicked() {
-        playbackStateMutatorMutex.mutate {
-            when (playbackState) {
-                is PlaybackState.Ready,
-                PlaybackState.PlayingVoice,
-                PlaybackState.Recording ->
-                    if (speakerIsSupported(activity)) {
-                        playbackState = PlaybackState.PlayingMusic
-                        playMusic(activity)
-                        playbackState = PlaybackState.Ready
-                    } else {
-                        showSpeakerNotSupported = true
-                        playbackState = PlaybackState.Ready
-                    }
-                // If we were already playing, transition back to ready
-                PlaybackState.PlayingMusic -> {
-                    playbackState = PlaybackState.Ready
-                }
-            }
-        }
-    }
-
-    suspend fun onPlayClicked() {
-        playbackStateMutatorMutex.mutate {
-            when (playbackState) {
-                is PlaybackState.Ready,
-                PlaybackState.PlayingMusic,
-                PlaybackState.Recording -> {
-                    if (speakerIsSupported(activity)) {
-                        playbackState = PlaybackState.PlayingVoice
-                        soundRecorder.play()
-                        playbackState = PlaybackState.Ready
-                    } else {
-                        showSpeakerNotSupported = true
-                        playbackState = PlaybackState.Ready
-                    }
-                }
-                // If we were already playing, transition back to ready
-                PlaybackState.PlayingVoice -> {
-                    playbackState = PlaybackState.Ready
-                }
-            }
-        }
-    }
-
     suspend fun permissionResultReturned() {
         playbackStateMutatorMutex.mutate {
             // Check if the user granted the permission
@@ -216,12 +168,11 @@ class MainState(
 }
 
 /**
- * The four "resting" playback states of the application.
+ * The three playback states of the application.
  */
 sealed class PlaybackState {
     object Ready : PlaybackState()
     object PlayingVoice : PlaybackState()
-    object PlayingMusic : PlaybackState()
     object Recording : PlaybackState()
 }
 
@@ -241,29 +192,16 @@ private fun speakerIsSupported(activity: Activity): Boolean {
     val hasBuiltInSpeaker = devices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER } &&
         hasAudioOutputFeature
 
-    val hasBluetoothSpeaker = devices.any { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP }
+    // Check all the Wear supported BT devices
+    // https://developer.android.com/training/wearables/apps/audio
+    val hasBluetoothSpeaker = devices.any {
+        it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+            it.type == AudioDeviceInfo.TYPE_BLE_BROADCAST ||
+            it.type == AudioDeviceInfo.TYPE_BLE_SPEAKER ||
+            it.type == AudioDeviceInfo.TYPE_BLE_HEADSET
+    }
 
     return hasBuiltInSpeaker || hasBluetoothSpeaker
-}
-
-/**
- * Plays the MP3 file embedded in the application, updating the state to reflect the playing.
- */
-private suspend fun playMusic(activity: Activity) {
-    val mediaPlayer = MediaPlayer.create(activity, R.raw.sound)
-
-    try {
-        // Convert the asynchronous callback to a suspending coroutine
-        suspendCancellableCoroutine<Unit> { cont ->
-            mediaPlayer.setOnCompletionListener {
-                cont.resume(Unit)
-            }
-            mediaPlayer.start()
-        }
-    } finally {
-        mediaPlayer.stop()
-        mediaPlayer.release()
-    }
 }
 
 /**

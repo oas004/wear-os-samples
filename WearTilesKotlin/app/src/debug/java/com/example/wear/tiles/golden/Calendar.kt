@@ -16,13 +16,17 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.material.CompactChip
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
+import androidx.wear.protolayout.material.CompactChip
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
+import com.example.wear.tiles.tools.emptyClickable
 
 object Calendar {
 
@@ -34,6 +38,7 @@ object Calendar {
         eventLocation: String,
         clickable: Clickable
     ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
         .setPrimaryLabelTextContent(
             Text.Builder(context, eventTime)
                 .setColor(ColorBuilders.argb(GoldenTilesColors.LightBlue))
@@ -57,4 +62,18 @@ object Calendar {
             CompactChip.Builder(context, "Agenda", clickable, deviceParameters).build()
         )
         .build()
+}
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun calendarPreview(context: Context) = TilePreviewData {
+    TilePreviewHelper.singleTimelineEntryTileBuilder(
+        Calendar.layout(
+            context,
+            it.deviceConfiguration,
+            eventTime = "6:30-7:30 PM",
+            eventName = "Morning Pilates with Christina Lloyd",
+            eventLocation = "216 Market Street",
+            clickable = emptyClickable
+        )
+    ).build()
 }

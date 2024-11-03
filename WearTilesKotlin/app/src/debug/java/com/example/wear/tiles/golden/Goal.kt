@@ -16,17 +16,21 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.material.CircularProgressIndicator
-import androidx.wear.tiles.material.ProgressIndicatorColors
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.EdgeContentLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.protolayout.material.CircularProgressIndicator
+import androidx.wear.protolayout.material.ProgressIndicatorColors
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.EdgeContentLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper.singleTimelineEntryTileBuilder
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
 
 object Goal {
     fun layout(context: Context, deviceParameters: DeviceParameters, steps: Int, goal: Int) =
         EdgeContentLayout.Builder(deviceParameters)
+            .setResponsiveContentInsetEnabled(true)
             .setEdgeContent(
                 CircularProgressIndicator.Builder()
                     .setProgress(steps.toFloat() / goal)
@@ -55,6 +59,17 @@ object Goal {
 }
 
 private fun blueOnTranslucentWhite() = ProgressIndicatorColors(
-    /* indicatorColor = */ ColorBuilders.argb(GoldenTilesColors.Blue),
-    /* trackColor = */ ColorBuilders.argb(GoldenTilesColors.White10Pc)
+    /* indicatorColor = */
+    ColorBuilders.argb(GoldenTilesColors.Blue),
+    /* trackColor = */
+    ColorBuilders.argb(GoldenTilesColors.White10Pc)
 )
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun goalPreview(context: Context) = TilePreviewData {
+    singleTimelineEntryTileBuilder(
+        Goal.layout(
+            context, it.deviceConfiguration, steps = 5168, goal = 8000
+        )
+    ).build()
+}

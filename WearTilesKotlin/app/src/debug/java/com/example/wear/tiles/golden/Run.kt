@@ -16,16 +16,20 @@
 package com.example.wear.tiles.golden
 
 import android.content.Context
-import androidx.wear.tiles.ColorBuilders
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.material.ChipColors
-import androidx.wear.tiles.material.CompactChip
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.TitleChip
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.PrimaryLayout
+import androidx.wear.protolayout.ColorBuilders
+import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
+import androidx.wear.protolayout.DimensionBuilders
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
+import androidx.wear.protolayout.material.ChipColors
+import androidx.wear.protolayout.material.CompactChip
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.TitleChip
+import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tiles.tooling.preview.TilePreviewHelper.singleTimelineEntryTileBuilder
+import com.example.wear.tiles.tools.MultiRoundDevicesWithFontScalePreviews
+import com.example.wear.tiles.tools.emptyClickable
 
 object Run {
 
@@ -33,9 +37,11 @@ object Run {
         context: Context,
         deviceParameters: DeviceParameters,
         lastRunText: String,
+        chanceOfRain: Int,
         startRunClickable: Clickable,
         moreChipClickable: Clickable
     ) = PrimaryLayout.Builder(deviceParameters)
+        .setResponsiveContentInsetEnabled(true)
         .setPrimaryLabelTextContent(
             Text.Builder(context, lastRunText)
                 .setTypography(Typography.TYPOGRAPHY_CAPTION1)
@@ -50,21 +56,49 @@ object Run {
                 .setWidth(DimensionBuilders.ExpandedDimensionProp.Builder().build())
                 .setChipColors(
                     ChipColors(
-                        /*backgroundColor=*/ ColorBuilders.argb(GoldenTilesColors.Blue),
-                        /*contentColor=*/ ColorBuilders.argb(GoldenTilesColors.Black)
+                        /*backgroundColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.Blue),
+                        /*contentColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.Black)
                     )
                 )
                 .build()
         )
+        .apply {
+            if (deviceParameters.screenWidthDp > 225) {
+                setSecondaryLabelTextContent(
+                    Text.Builder(context, "$chanceOfRain% chance of rain")
+                        .setTypography(Typography.TYPOGRAPHY_CAPTION1)
+                        .setColor(ColorBuilders.argb(GoldenTilesColors.LightGray))
+                        .build()
+                )
+            }
+        }
         .setPrimaryChipContent(
             CompactChip.Builder(context, "More", moreChipClickable, deviceParameters)
                 .setChipColors(
                     ChipColors(
-                        /*backgroundColor=*/ ColorBuilders.argb(GoldenTilesColors.DarkGray),
-                        /*contentColor=*/ ColorBuilders.argb(GoldenTilesColors.White)
+                        /*backgroundColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.DarkGray),
+                        /*contentColor=*/
+                        ColorBuilders.argb(GoldenTilesColors.White)
                     )
                 )
                 .build()
         )
         .build()
+}
+
+@MultiRoundDevicesWithFontScalePreviews
+internal fun runPreview(context: Context) = TilePreviewData {
+    singleTimelineEntryTileBuilder(
+        Run.layout(
+            context,
+            it.deviceConfiguration,
+            lastRunText = "2 days ago",
+            chanceOfRain = 20,
+            startRunClickable = emptyClickable,
+            moreChipClickable = emptyClickable
+        )
+    ).build()
 }
